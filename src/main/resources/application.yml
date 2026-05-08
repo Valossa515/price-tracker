@@ -88,6 +88,8 @@ app:
       - produto.mercadolivre.com.br
       - www.amazon.com.br
       - amazon.com.br
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}
 
 logging:
   level:
