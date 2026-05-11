@@ -1,0 +1,33 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/price-tracker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /opt/price-tracker/web:/srv:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  app:
+    image: 941098798253.dkr.ecr.sa-east-1.amazonaws.com/price-tracker:7f849fc
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - /opt/price-tracker/.env
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  caddy_data:
+  caddy_config:

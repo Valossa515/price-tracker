@@ -23,4 +23,17 @@ public class RestClientConfig {
                 .requestFactory(factory)
                 .build();
     }
+
+    @Bean
+    RestClient shopeeRestClient(
+            @Value("${app.marketplace.shopee.api-base:https://open-api.affiliate.shopee.com.br/graphql}") String baseUrl) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(5));
+        factory.setReadTimeout(Duration.ofSeconds(10));
+        return RestClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader("Accept", "application/json")
+                .requestFactory(factory)
+                .build();
+    }
 }

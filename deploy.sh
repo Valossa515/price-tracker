@@ -101,6 +101,14 @@ fi
 
 echo ">>> [5/5] Restart no EC2 ($IID) via SSM send-command..."
 
+# Sync infra files (bootstrap-env.sh) pro EC2 antes de rodar.
+# Garante que o script no EC2 sempre bate com o repo.
+if [ ! -f infra/bootstrap-env.sh ]; then
+  echo "ERRO: infra/bootstrap-env.sh não encontrado no repo" >&2
+  exit 1
+fi
+BOOTSTRAP_B64=$(base64 -i infra/bootstrap-env.sh | tr -d '\n')
+
 CMD_ID=$(AWS_PROFILE="$PROFILE" aws ssm send-command \
   --region "$REGION" \
   --instance-ids "$IID" \
@@ -108,8 +116,11 @@ CMD_ID=$(AWS_PROFILE="$PROFILE" aws ssm send-command \
   --comment "Deploy price-tracker $TAG" \
   --parameters "commands=[
     'cd /opt/price-tracker',
+    'echo $BOOTSTRAP_B64 | base64 -d > bootstrap-env.sh',
+    'chmod +x bootstrap-env.sh',
     'NEW_VERSION=\$(aws ssm get-parameter --region $REGION --name $SSM_VERSION_PARAM --query Parameter.Value --output text)',
     'sed -i \"s|price-tracker:.*|price-tracker:\$NEW_VERSION|\" docker-compose.yml',
+    './bootstrap-env.sh /opt/price-tracker/.env',
     'aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin ${ECR_REPO%/*}',
     'docker compose pull app',
     'docker compose up -d app',
