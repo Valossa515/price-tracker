@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +21,12 @@ public interface UserConsentRepository extends JpaRepository<UserConsent, UUID> 
     Optional<UserConsent> findLatest(
             @Param("userId") String userId,
             @Param("documentType") ConsentDocumentType documentType);
+
+    List<UserConsent> findByUserIdOrderByAcceptedAtDesc(String userId);
+
+    default List<UserConsent> findByUserId(String userId) {
+        return findByUserIdOrderByAcceptedAtDesc(userId);
+    }
 
     @Modifying
     @Query("DELETE FROM UserConsent c WHERE c.userId = :userId")
