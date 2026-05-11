@@ -58,6 +58,10 @@ spring:
       enabled: true
       max-size: 1000
 
+cognito:
+  user-pool-id: ${COGNITO_USER_POOL_ID:}
+  region: ${COGNITO_REGION:us-east-1}
+
 server:
   port: 8080
   error:
@@ -90,6 +94,16 @@ app:
       - amazon.com.br
   cors:
     allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}
+  consent:
+    documents:
+      PRIVACY_POLICY:
+        version: ${CONSENT_PRIVACY_VERSION:v1}
+        title: Política de Privacidade
+        url: ${CONSENT_PRIVACY_URL:https://littlepricetracker.observer/legal/privacy-v1.html}
+      TERMS_OF_USE:
+        version: ${CONSENT_TERMS_VERSION:v1}
+        title: Termos de Uso
+        url: ${CONSENT_TERMS_URL:https://littlepricetracker.observer/legal/terms-v1.html}
 
 logging:
   level:
