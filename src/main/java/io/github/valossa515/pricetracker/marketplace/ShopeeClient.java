@@ -55,15 +55,13 @@ public class ShopeeClient implements MarketplaceClient {
 
     private final RestClient restClient;
     private final ShopeeSignatureSigner signer;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ShopeeClient(
             @Qualifier("shopeeRestClient") RestClient restClient,
-            ShopeeSignatureSigner signer,
-            ObjectMapper objectMapper) {
+            ShopeeSignatureSigner signer) {
         this.restClient = restClient;
         this.signer = signer;
-        this.objectMapper = objectMapper;
     }
 
     @Override
