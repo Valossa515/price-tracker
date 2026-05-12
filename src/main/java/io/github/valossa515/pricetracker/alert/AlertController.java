@@ -2,11 +2,17 @@ package io.github.valossa515.pricetracker.alert;
 
 import io.github.valossa515.pricetracker.alert.cqrs.CreateAlertCommand;
 import io.github.valossa515.pricetracker.alert.cqrs.DeleteAlertCommand;
+import io.github.valossa515.pricetracker.alert.cqrs.FindAlertComparisonsQuery;
+import io.github.valossa515.pricetracker.alert.cqrs.GetAlertAnalyticsQuery;
 import io.github.valossa515.pricetracker.alert.cqrs.GetAlertByIdQuery;
+import io.github.valossa515.pricetracker.alert.cqrs.GetAlertHistoryQuery;
 import io.github.valossa515.pricetracker.alert.cqrs.ListMyAlertsQuery;
 import io.github.valossa515.pricetracker.alert.cqrs.UpdateAlertTargetPriceCommand;
+import io.github.valossa515.pricetracker.alert.dto.AlertAnalyticsResponse;
 import io.github.valossa515.pricetracker.alert.dto.AlertResponse;
 import io.github.valossa515.pricetracker.alert.dto.CreateAlertRequest;
+import io.github.valossa515.pricetracker.alert.dto.PriceHistoryPointResponse;
+import io.github.valossa515.pricetracker.alert.dto.ProductComparisonResponse;
 import io.github.valossa515.pricetracker.alert.dto.UpdateAlertTargetPriceRequest;
 import io.github.valossa515.pricetracker.pricecheck.cqrs.CheckAllActiveAlertsCommand;
 import io.github.valossa515.pricetracker.security.UrlAllowlistService;
@@ -23,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -65,7 +72,11 @@ public class AlertController {
                 email,
                 req.productUrl(),
                 req.productName(),
-                req.targetPrice()
+                req.resolvedType(),
+                req.targetPrice(),
+                req.discountPercent(),
+                req.dropWindowDays(),
+                req.dropPercent()
         );
         return courier.send(cmd).getDataOrThrow();
     }
@@ -80,6 +91,35 @@ public class AlertController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id) {
         return courier.send(new GetAlertByIdQuery(id, jwt.getSubject())).getDataOrThrow();
+    }
+
+    @GetMapping("/{id}/history")
+    public List<PriceHistoryPointResponse> history(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "30") int days,
+            @RequestParam(defaultValue = "500") int limit) {
+        return courier.send(new GetAlertHistoryQuery(id, jwt.getSubject(), days, limit))
+                .getDataOrThrow();
+    }
+
+    @GetMapping("/{id}/analytics")
+    public AlertAnalyticsResponse analytics(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "30") int days) {
+        return courier.send(new GetAlertAnalyticsQuery(id, jwt.getSubject(), days))
+                .getDataOrThrow();
+    }
+
+    @GetMapping("/{id}/comparisons")
+    public List<ProductComparisonResponse> comparisons(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "0.55") double minScore,
+            @RequestParam(defaultValue = "5") int limit) {
+        return courier.send(new FindAlertComparisonsQuery(id, jwt.getSubject(), minScore, limit))
+                .getDataOrThrow();
     }
 
     @PatchMapping("/{id}")

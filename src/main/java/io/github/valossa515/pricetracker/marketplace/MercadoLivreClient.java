@@ -53,6 +53,35 @@ public class MercadoLivreClient implements MarketplaceClient {
         return Optional.empty();
     }
 
+    @Override
+    public List<ProductSearchResult> search(String query, int limit) {
+        if (query == null || query.isBlank()) return List.of();
+        int safeLimit = Math.max(1, Math.min(limit, 20));
+        try {
+            String token = tokenProvider.getToken();
+            SearchResponse resp = restClient.get()
+                    .uri(uri -> uri.path("/sites/MLB/search")
+                            .queryParam("q", query)
+                            .queryParam("limit", safeLimit)
+                            .build())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .body(SearchResponse.class);
+            if (resp == null || resp.results == null) return List.of();
+            return resp.results.stream()
+                    .filter(r -> r.title != null && r.price != null)
+                    .map(r -> new ProductSearchResult(
+                            HOST,
+                            r.title,
+                            BigDecimal.valueOf(r.price),
+                            r.permalink != null ? r.permalink : "https://www.mercadolivre.com.br/p/" + r.id))
+                    .toList();
+        } catch (RestClientException e) {
+            log.warn("ML search failed for '{}': {}", query, e.getMessage());
+            return List.of();
+        }
+    }
+
     private Optional<ProductInfo> fetchCatalog(String catalogId) {
         try {
             String token = tokenProvider.getToken();
@@ -71,12 +100,18 @@ public class MercadoLivreClient implements MarketplaceClient {
                     || offers.results == null || offers.results.isEmpty()) {
                 return Optional.empty();
             }
-            Optional<BigDecimal> lowest = offers.results.stream()
+            List<CatalogOffer> available = offers.results.stream()
+                    .filter(o -> o.price != null)
+                    .filter(CatalogOffer::isAvailable)
+                    .toList();
+            boolean isAvailable = !available.isEmpty();
+            List<CatalogOffer> source = isAvailable ? available : offers.results;
+            Optional<BigDecimal> lowest = source.stream()
                     .map(CatalogOffer::price)
                     .filter(Objects::nonNull)
                     .map(BigDecimal::valueOf)
                     .min(Comparator.naturalOrder());
-            return lowest.map(price -> new ProductInfo(catalog.name(), price));
+            return lowest.map(price -> new ProductInfo(catalog.name(), price, isAvailable));
         } catch (RestClientException e) {
             log.warn("ML catalog fetch failed for {}: {}", catalogId, e.getMessage());
             return Optional.empty();
@@ -94,7 +129,7 @@ public class MercadoLivreClient implements MarketplaceClient {
             if (item == null || item.price == null) {
                 return Optional.empty();
             }
-            return Optional.of(new ProductInfo(item.title, BigDecimal.valueOf(item.price)));
+            return Optional.of(new ProductInfo(item.title, BigDecimal.valueOf(item.price), item.isAvailable()));
         } catch (RestClientException e) {
             log.warn("ML item fetch failed for {}: {}", itemId, e.getMessage());
             return Optional.empty();
@@ -102,7 +137,12 @@ public class MercadoLivreClient implements MarketplaceClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record MlItem(String title, Double price) {
+    private record MlItem(String title, Double price, Integer available_quantity, String status) {
+        boolean isAvailable() {
+            boolean active = status == null || "active".equalsIgnoreCase(status);
+            boolean hasStock = available_quantity == null || available_quantity > 0;
+            return active && hasStock;
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -114,6 +154,19 @@ public class MercadoLivreClient implements MarketplaceClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private record CatalogOffer(Double price) {
+    private record CatalogOffer(Double price, Integer available_quantity, String status) {
+        boolean isAvailable() {
+            boolean active = status == null || "active".equalsIgnoreCase(status);
+            boolean hasStock = available_quantity == null || available_quantity > 0;
+            return active && hasStock;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record SearchResponse(List<SearchHit> results) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record SearchHit(String id, String title, Double price, String permalink) {
     }
 }

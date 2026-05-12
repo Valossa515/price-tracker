@@ -117,7 +117,7 @@ public class ShopeeClient implements MarketplaceClient {
             if (price == null || node.productName == null) {
                 return Optional.empty();
             }
-            return Optional.of(new ProductInfo(node.productName, price));
+            return Optional.of(new ProductInfo(node.productName, price, true));
         } catch (JsonProcessingException e) {
             log.warn("Failed to serialize Shopee GraphQL payload: {}", e.getMessage());
             return Optional.empty();

@@ -43,7 +43,7 @@ public class Alert {
     @Column(name = "product_name", length = 500)
     private String productName;
 
-    @Column(name = "target_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "target_price", precision = 12, scale = 2)
     private BigDecimal targetPrice;
 
     @Column(name = "last_observed_price", precision = 12, scale = 2)
@@ -52,6 +52,25 @@ public class Alert {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private AlertStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "alert_type", nullable = false, length = 30)
+    private AlertType alertType;
+
+    @Column(name = "discount_percent", precision = 5, scale = 2)
+    private BigDecimal discountPercent;
+
+    @Column(name = "drop_window_days")
+    private Integer dropWindowDays;
+
+    @Column(name = "drop_percent", precision = 5, scale = 2)
+    private BigDecimal dropPercent;
+
+    @Column(name = "last_observed_available")
+    private Boolean lastObservedAvailable;
+
+    @Column(name = "real_discount_flag")
+    private Boolean realDiscountFlag;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -66,6 +85,9 @@ public class Alert {
         }
         if (status == null) {
             status = AlertStatus.ACTIVE;
+        }
+        if (alertType == null) {
+            alertType = AlertType.PRICE_BELOW_TARGET;
         }
     }
 }
