@@ -34,7 +34,7 @@ public class Alert {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
-    @Column(name = "user_email", nullable = false, length = 320)
+    @Column(name = "user_email", length = 320)
     private String userEmail;
 
     @Column(name = "product_url", nullable = false, length = 2048)
@@ -77,6 +77,12 @@ public class Alert {
 
     @Column(name = "last_checked_at")
     private Instant lastCheckedAt;
+
+    @Column(name = "webhook_url", length = 2048)
+    private String webhookUrl;
+
+    @Column(name = "webhook_secret", length = 128)
+    private String webhookSecret;
 
     @PrePersist
     void prePersist() {

@@ -96,6 +96,16 @@ app:
       - www.shopee.com.br
   cors:
     allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:4200}
+  publicapi:
+    required-scope: ${PUBLIC_API_SCOPE:external-api}
+    rate-limit:
+      requests-per-minute: ${PUBLIC_API_RPM:60}
+      burst: ${PUBLIC_API_BURST:10}
+    webhook:
+      connect-timeout-ms: ${PUBLIC_API_WEBHOOK_CONNECT_MS:3000}
+      read-timeout-ms: ${PUBLIC_API_WEBHOOK_READ_MS:5000}
+      max-attempts: ${PUBLIC_API_WEBHOOK_MAX_ATTEMPTS:3}
+      retry-backoff-ms: ${PUBLIC_API_WEBHOOK_RETRY_BACKOFF_MS:500}
   consent:
     documents:
       PRIVACY_POLICY:

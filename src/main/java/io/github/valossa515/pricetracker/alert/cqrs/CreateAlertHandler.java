@@ -29,6 +29,8 @@ public class CreateAlertHandler implements CommandHandler<CreateAlertCommand, Al
                 .discountPercent(cmd.discountPercent())
                 .dropWindowDays(cmd.dropWindowDays())
                 .dropPercent(cmd.dropPercent())
+                .webhookUrl(cmd.webhookUrl())
+                .webhookSecret(cmd.webhookSecret())
                 .build();
         return AlertResponse.from(repository.save(alert));
     }

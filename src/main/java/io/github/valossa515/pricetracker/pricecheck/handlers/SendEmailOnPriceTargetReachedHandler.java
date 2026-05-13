@@ -14,6 +14,9 @@ public class SendEmailOnPriceTargetReachedHandler implements NotificationHandler
 
     @Override
     public void handle(PriceTargetReachedEvent event) {
+        if (event.userEmail() == null || event.userEmail().isBlank()) {
+            return; // webhook-only alert
+        }
         emailService.sendPriceAlert(
                 event.userEmail(),
                 event.productName(),

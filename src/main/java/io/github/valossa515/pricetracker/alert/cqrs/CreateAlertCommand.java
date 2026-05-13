@@ -15,6 +15,24 @@ public record CreateAlertCommand(
         BigDecimal targetPrice,
         BigDecimal discountPercent,
         Integer dropWindowDays,
-        BigDecimal dropPercent
+        BigDecimal dropPercent,
+        String webhookUrl,
+        String webhookSecret
 ) implements ICommand<AlertResponse> {
+
+    /** Backward-compatible factory for callers that don't use webhooks. */
+    public CreateAlertCommand(
+            String userId,
+            String userEmail,
+            String productUrl,
+            String productName,
+            AlertType alertType,
+            BigDecimal targetPrice,
+            BigDecimal discountPercent,
+            Integer dropWindowDays,
+            BigDecimal dropPercent) {
+        this(userId, userEmail, productUrl, productName, alertType,
+                targetPrice, discountPercent, dropWindowDays, dropPercent,
+                null, null);
+    }
 }

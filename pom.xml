@@ -22,6 +22,7 @@
         <spring-courier.version>3.0.0</spring-courier.version>
         <jsoup.version>1.18.3</jsoup.version>
         <bucket4j.version>8.14.0</bucket4j.version>
+        <springdoc.version>2.7.0</springdoc.version>
     </properties>
 
     <dependencyManagement>
@@ -109,6 +110,13 @@
             <groupId>com.bucket4j</groupId>
             <artifactId>bucket4j_jdk17-core</artifactId>
             <version>${bucket4j.version}</version>
+        </dependency>
+
+        <!-- OpenAPI / Swagger UI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- AWS Cognito (account deletion / LGPD) -->
