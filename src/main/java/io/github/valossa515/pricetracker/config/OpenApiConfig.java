@@ -36,6 +36,18 @@ public class OpenApiConfig {
                                 The public API additionally requires the OAuth2 scope
                                 `pricetracker/external-api`.
                                 
+                                ### How to request credentials
+                                
+                                Credentials (`client_id` + `client_secret`) are issued manually.
+                                Email **fe.mmo515@gmail.com** with:
+                                
+                                - Company / project name
+                                - Intended use case
+                                - Expected request volume
+                                - Source IP range (optional, for allowlisting)
+                                
+                                You will receive the credentials via a secure share link.
+                                
                                 ### How to get a token (client_credentials)
                                 
                                 Request a token from your Cognito user pool using the
@@ -68,7 +80,7 @@ public class OpenApiConfig {
                                 
                                 Verify the signature on your side before trusting the payload.
                                 """)
-                        .contact(new Contact().name("price-tracker"))
+                        .contact(new Contact().name("price-tracker").email("fe.mmo515@gmail.com"))
                         .license(new License().name("Proprietary")))
                 .components(new Components())
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
