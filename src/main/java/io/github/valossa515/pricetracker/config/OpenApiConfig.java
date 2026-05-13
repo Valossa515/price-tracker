@@ -30,18 +30,43 @@ public class OpenApiConfig {
                                 Internal endpoints under `/api/v1/*` and the external
                                 consumer-facing API under `/api/v1/public/*`.
                                 
-                                **Authentication.** All endpoints require a Bearer JWT
-                                issued by AWS Cognito. The public API additionally requires
-                                the OAuth2 scope configured by `app.publicapi.required-scope`
-                                (default `external-api`).
+                                ## Authentication
                                 
-                                **Rate limit.** Public endpoints are rate-limited per JWT
-                                subject (default 60 req/min, burst 10).
+                                All endpoints require a Bearer JWT issued by AWS Cognito.
+                                The public API additionally requires the OAuth2 scope
+                                `pricetracker/external-api`.
                                 
-                                **Webhooks.** When you create an alert with `webhookUrl` and
-                                `webhookSecret`, triggered events are POSTed as JSON with the
-                                headers `X-PriceTracker-Event`, `X-PriceTracker-Timestamp`,
-                                and `X-PriceTracker-Signature: sha256=<hex HMAC of body>`.
+                                ### How to get a token (client_credentials)
+                                
+                                Request a token from your Cognito user pool using the
+                                `client_id` and `client_secret` provided to your integration:
+                                
+                                ```
+                                curl -u <CLIENT_ID>:<CLIENT_SECRET> \\
+                                  -d "grant_type=client_credentials&scope=pricetracker/external-api" \\
+                                  https://price-tracker-dev-3fde8e2b.auth.us-east-1.amazoncognito.com/oauth2/token
+                                ```
+                                
+                                The response contains `access_token`. Click **Authorize**
+                                above and paste the value (without the `Bearer ` prefix).
+                                Tokens are valid for 1 hour by default.
+                                
+                                ## Rate limit
+                                
+                                Public endpoints are rate-limited per JWT subject
+                                (default 60 req/min, burst 10). Exceeded requests return
+                                HTTP 429 with `Retry-After: 60`.
+                                
+                                ## Webhooks
+                                
+                                When you create an alert with `webhookUrl` and `webhookSecret`,
+                                triggered events are POSTed as JSON with the headers:
+                                
+                                - `X-PriceTracker-Event`
+                                - `X-PriceTracker-Timestamp`
+                                - `X-PriceTracker-Signature: sha256=<hex HMAC-SHA256 of body using your secret>`
+                                
+                                Verify the signature on your side before trusting the payload.
                                 """)
                         .contact(new Contact().name("price-tracker"))
                         .license(new License().name("Proprietary")))
