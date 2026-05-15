@@ -64,6 +64,7 @@ cognito:
 
 server:
   port: 8080
+  forward-headers-strategy: native
   error:
     include-message: never
     include-stacktrace: never
@@ -106,6 +107,8 @@ app:
       read-timeout-ms: ${PUBLIC_API_WEBHOOK_READ_MS:5000}
       max-attempts: ${PUBLIC_API_WEBHOOK_MAX_ATTEMPTS:3}
       retry-backoff-ms: ${PUBLIC_API_WEBHOOK_RETRY_BACKOFF_MS:500}
+      require-https: ${PUBLIC_API_WEBHOOK_REQUIRE_HTTPS:true}
+      allow-private-targets: ${PUBLIC_API_WEBHOOK_ALLOW_PRIVATE:false}
   consent:
     documents:
       PRIVACY_POLICY:

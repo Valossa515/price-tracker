@@ -12,6 +12,7 @@ import io.github.valossa515.pricetracker.marketplace.cqrs.FetchProductPriceQuery
 import io.github.valossa515.pricetracker.publicapi.dto.PublicAlertResponse;
 import io.github.valossa515.pricetracker.publicapi.dto.PublicCreateAlertRequest;
 import io.github.valossa515.pricetracker.publicapi.dto.PublicPriceResponse;
+import io.github.valossa515.pricetracker.publicapi.webhook.WebhookUrlValidator;
 import io.github.valossa515.pricetracker.security.UrlAllowlistService;
 import io.github.valossa515.spring_courier.core.Courier;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,6 +54,7 @@ public class PublicApiController {
     private final Courier courier;
     private final AlertRepository alertRepository;
     private final UrlAllowlistService urlAllowlist;
+    private final WebhookUrlValidator webhookUrlValidator;
 
     @Operation(summary = "Fetch the current price of a supported marketplace product by URL.")
     @GetMapping("/products/price")
@@ -89,7 +91,15 @@ public class PublicApiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Provide ownerEmail or webhookUrl so the alert can deliver notifications");
         }
+if (req.webhookUrl() != null && !req.webhookUrl().isBlank()) {
+            try {
+                webhookUrlValidator.validate(req.webhookUrl());
+            } catch (WebhookUrlValidator.InvalidWebhookUrlException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            }
+        }
 
+        
         CreateAlertCommand cmd = new CreateAlertCommand(
                 jwt.getSubject(),
                 email,
