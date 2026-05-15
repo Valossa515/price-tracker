@@ -58,11 +58,10 @@ public class ConsentController {
     }
 
     private static String clientIp(HttpServletRequest http) {
-        String xff = http.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            int comma = xff.indexOf(',');
-            return (comma >= 0 ? xff.substring(0, comma) : xff).trim();
-        }
+        // Tomcat's RemoteIpValve (enabled via server.forward-headers-strategy=native)
+        // already resolves X-Forwarded-For for trusted proxies and writes the
+        // real client IP into getRemoteAddr(). Trusting the header here directly
+        // would let unauthenticated clients spoof their IP.
         return http.getRemoteAddr();
     }
 }

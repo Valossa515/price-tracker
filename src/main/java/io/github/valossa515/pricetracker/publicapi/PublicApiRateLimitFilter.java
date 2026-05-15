@@ -76,11 +76,9 @@ public class PublicApiRateLimitFilter extends OncePerRequestFilter {
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
             return "sub:" + jwt.getSubject();
         }
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isBlank()) {
-            int comma = ip.indexOf(',');
-            return "ip:" + (comma > 0 ? ip.substring(0, comma).trim() : ip.trim());
-        }
+        // RemoteIpValve (server.forward-headers-strategy=native) rewrites
+        // getRemoteAddr() with the real client IP for trusted proxies. Reading
+        // X-Forwarded-For directly here would let any caller spoof its key.
         return "ip:" + request.getRemoteAddr();
     }
 }

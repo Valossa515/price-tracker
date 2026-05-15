@@ -92,6 +92,10 @@ class PublicApiEndToEndTest {
         r.add("PUBLIC_API_RPM", () -> "3");
         r.add("PUBLIC_API_BURST", () -> "3");
         r.add("PUBLIC_API_WEBHOOK_MAX_ATTEMPTS", () -> "1");
+        // E2E uses WireMock (http://127.0.0.1:<port>) for the webhook target;
+        // relax the SSRF guard so the test can drive the real delivery path.
+        r.add("PUBLIC_API_WEBHOOK_REQUIRE_HTTPS", () -> "false");
+        r.add("PUBLIC_API_WEBHOOK_ALLOW_PRIVATE", () -> "true");
     }
 
     @Autowired

@@ -13,7 +13,7 @@ public record PublicApiProperties(
             requiredScope = "external-api";
         }
         if (rateLimit == null) rateLimit = new RateLimit(60, 10);
-        if (webhook == null) webhook = new Webhook(3000, 5000, 3, 500);
+        if (webhook == null) webhook = new Webhook(3000, 5000, 3, 500, true, false);
     }
 
     public record RateLimit(int requestsPerMinute, int burst) {
@@ -23,7 +23,13 @@ public record PublicApiProperties(
         }
     }
 
-    public record Webhook(int connectTimeoutMs, int readTimeoutMs, int maxAttempts, long retryBackoffMs) {
+    public record Webhook(
+            int connectTimeoutMs,
+            int readTimeoutMs,
+            int maxAttempts,
+            long retryBackoffMs,
+            boolean requireHttps,
+            boolean allowPrivateTargets) {
         public Webhook {
             if (connectTimeoutMs <= 0) connectTimeoutMs = 3000;
             if (readTimeoutMs <= 0) readTimeoutMs = 5000;

@@ -26,18 +26,27 @@ public class WebhookDeliveryService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final int maxAttempts;
     private final long retryBackoffMs;
+    private final WebhookUrlValidator urlValidator;
 
-    public WebhookDeliveryService(PublicApiProperties properties) {
+    public WebhookDeliveryService(PublicApiProperties properties,
+                                  WebhookUrlValidator urlValidator) {
         SimpleClientHttpRequestFactory rf = new SimpleClientHttpRequestFactory();
         rf.setConnectTimeout(properties.webhook().connectTimeoutMs());
         rf.setReadTimeout(properties.webhook().readTimeoutMs());
         this.restClient = RestClient.builder().requestFactory(rf).build();
         this.maxAttempts = properties.webhook().maxAttempts();
         this.retryBackoffMs = properties.webhook().retryBackoffMs();
+        this.urlValidator = urlValidator;
     }
 
     public void deliver(String url, String secret, String eventType, Map<String, Object> payload) {
         if (url == null || url.isBlank() || secret == null || secret.isBlank()) {
+            return;
+        }
+        try {
+            urlValidator.validate(url);
+        } catch (WebhookUrlValidator.InvalidWebhookUrlException e) {
+            log.warn("Refusing to deliver webhook to unsafe url={} reason={}", url, e.getMessage());
             return;
         }
         String body;
